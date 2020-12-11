@@ -1,0 +1,132 @@
+
+
+\documentclass[pdftex,10pt,a4paper]{article}
+%Can change the pt, papersize etc.
+
+\usepackage{amsmath} %For both in-line and equation mode
+\numberwithin{equation}{section} %Numbering of our equations per section
+\usepackage{algorithm}
+\usepackage{algorithmic} %Algorithm styles, need to be nested for the example shown
+\usepackage{fancyhdr} %For our headers
+\usepackage{graphicx} %Inserting images
+\usepackage{lipsum}  %Blank text fill, delete me when finished
+\usepackage{setspace} %Spacing on the front page for crest and titles
+\usepackage[]{fncychap} % Styles can be Sonny, Lenny, Glenn, Conny, Rejne, Bjarne and Bjornstrup
+\usepackage[hyphens]{url} %Deals with hyphens in urls to make them clickable
+\usepackage{xcolor} %Great if you want coloured text
+\usepackage{tabularx}
+\usepackage{appendix} %Take a wild guess slick
+
+%KEEP THIS ONE LAST it's quite buggy, it allows you to click on links within the pdf and web links without changing the colour. The mouse cursor simply changes its icon to indicate to the user. Great tool - still awkward
+\usepackage[hidelinks]{hyperref}
+
+
+
+%This will tell the compiler to do the header style, page and spacing between the header and text
+\fancyhf{}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.2pt}
+
+\fancyhead[L]{Group 19}
+\fancyhead[C]{CISC 204: Modelling Project ($1^{st}$ draft)}
+\fancyhead[R]{Page \thepage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%% DOCUMENT STARTS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\newcommand{\groupid}{GRP\_123}
+\newcommand{\projectname}{Project Name}
+
+
+\newcommand{\authors}
+{
+Name of Teammate 1 (and their NetID)\\s
+Name of Teammate 2 (and their NetID)\\
+Name of Teammate 3 (and their NetID)\\
+Name of Teammate 4 (and their NetID)\\
+}
+
+
+
+%Lets begin the document, some chapters have examples in to give you an idea 
+\begin{document}
+
+
+\section*{Abstract}
+\addcontentsline{toc}{section}{Abstract}
+% \vspace{2cm}
+We are exploring the popular board game 'The Resistance' through a formal logic lens, where the turn-based format with 2 teams (Spies, Resistance) and hidden player identities allow the establishment of propositional models that are solvable by computer. The 7 players go on a series of 'missions' which are voted to go ahead or not by a subset of all players selected by a leader in each of the 5 rounds. A mission succeeds for the Resistance team and gains them a point if all participants submit a 'success' card in an anonymous choice procedure, which is the key game mechanic as a given player doesn't directly know the team membership of other players and is forced to infer this information as the rounds progress. Spies can submit a 'fail' card and cause the mission to fail which gives them one point, and either team wins the game with 3 points. 
+
+
+\section*{Propositions}
+%List of the propositions used in the model, and their (English) interpretation.
+$x_i$ is true at position i depending on the round number (e.g. $x_2$ is true for r2)\newline
+$Z_j$ is true if the vote tracker is at position j \newline
+$Y_k$ is true if mission k is approved \newline
+$S$ is true if the current mission is a success for team Resistance \newline
+$W_l$ is true depending on the position of the round l won for team R \newline
+$V$ represents the overall game victory condition \newline
+
+\section*{Constraints}
+%List of constraint types used in the model and their (English) interpretation. You only need to provide one example for each constraint type: e.g., if you have constraints saying “cars have one colour assigned” in a car configuration setting, then you only need to show the constraints for a single car. Essentially, we want to see the pattern for all of the types of constraints, and not every constraint enumerated.\newline
+
+Detailed description of the game rules:
+
+7 players total $\rightarrow$ 4 R, 3 S\newline
+\indent 5 total rounds ('missions')$\rightarrow$ a team wins if they succeed in 3/5 in any order\newline
+
+Round structure:
+
+\indent r1: 3 players \newline
+\indent	r2: 4 players \newline
+\indent	r3: 3 players \newline
+\indent	r4: 4 players \newline
+\indent	r5: 4 players \newline
+
+
+Before the game starts (i.e. r0) each player is randomly assigned a team which none of the other players know. This assignment lasts until the game ends.
+At the start of each round, one player is assigned the role of 'mission leader' \& the remaining 6 are given 1 accept and 1 reject token for voting purposes. The leader then gets to choose the corresponding number of players per round from the pool to send on the mission as above (leader not included).\newline
+
+Mission start:\newline \newline
+\indent Selected players vote to either accept or reject the current mission. \newline
+\indent If a majority reject the mission, then the next counterclockwise player is \indent assigned leader. NOTE: If 5 rejections occur in a row then the S team \indent wins automatically. The vote tracker resets every round (e.g. r2 can have 1 \indent rejection, r3 0, r4 3, etc.)\newline
+\indent If a majority accept the mission, then each active player is given 1 success \indent card and 1 failure card. NOTE: R players have to play success every time, \indent whereas S players can play either success or failure. Once all players turn in \indent their cards then the total number is counted. If there's $\ge$1 fail cards then \indent the current mission fails $\rightarrow$ 1 point for team S. Otherwise, 1 point for team R \newline
+
+\indent If there's a tie of accept/reject tokens (possible on rounds w/ an even \indent number of players) then flip a coin to see whether the mission happens or \indent not (H  yes, T no).\newline 
+
+Mission end\newline
+
+At the end of any round, if a team gets 3 points then they are declared the \indent winner, unless the above win condition for team S is satisfied. \newline
+
+As per Prof. Muise's suggestion, we've expanded the scope of the constraints by imagining that at the time of player selection for each mission the leader will have access to a computer with the Python scripts for this project, and they will attempt to calculate an estimate of winning based on the probability that the other players are on team R or team S. This is done by simply counting the number of valid models (propositional formulas evaluating to true under the selected conditions) and dividing by the total number of models:
+
+\begin{equation}
+	P(win)=\frac{n_{valid}}{n_{valid} + n_{invalid}}
+\end{equation}
+
+\section*{Model Exploration}
+%List all the ways that you have explored your model – not only the final version, but intermediate versions as well. See (C3) in the project description for ideas.
+The PDB debugger that comes included by default python3 installation (Ubuntu 20.04) was used to explore the run.py script as it ran, with breakpoints set at function calls. This confirmed that the basic version works and allowed for a better understanding of how the lists containing the models are modified depending on certain constraints being met or not. Importantly, use of the random package is projected to make generating various win/loss scenarios simpler. Please see the uploaded screenshots in the /draft folder for a detailed look
+
+%\section*{First-Order Extension}
+%Describe how you might extend your model to a predicate logic setting, including how both the propositions and constraints would be updated. There is no need to implement this extension!
+%N/A for draft
+
+\section*{Requested Feedback}
+\begin{enumerate}
+	\item Do the listed propositions \& constraints properly match the game rules? If not, what should be changed?
+	
+	\item How well do the Python scripts simulate the mechanics of the game?
+	
+	\item Are the Jape proofs complete from a logical perspective? Why or why not?\newline
+	
+	Thank you for taking the time to do this!
+	
+\end{enumerate}
+
+
+%\[ \wedge \hspace{4mm} \vee \hspace{4mm} \neg \hspace{4mm} \rightarrow \hspace{4mm} \forall \hspace{4mm} \exists \]
+
+
+\end{document}
